@@ -31,6 +31,27 @@
           <Property Name="ChatProfileId" Type="int" Nullable="false" />
           <Property Name="IsOwner" Type="bit" Nullable="false" />
         </EntityType>
+        <EntityType Name="ReviewItem">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ReviewId" Type="int" Nullable="false" />
+          <Property Name="RegisteredUserId" Type="int" Nullable="false" />
+          <Property Name="AuditPassed" Type="bit" />
+          <Property Name="PostTag1" Type="nvarchar(max)" />
+          <Property Name="PostTag2" Type="nvarchar(max)" />
+          <Property Name="PostTag3" Type="nvarchar(max)" />
+          <Property Name="PostTag4" Type="nvarchar(max)" />
+          <Property Name="PostTag5" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="ReviewRefreshRequest">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="RegisteredUserId" Type="int" Nullable="false" />
+        </EntityType>
         <EntityType Name="ReviewSession">
           <Key>
             <PropertyRef Name="Id" />
@@ -72,6 +93,30 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK__ReviewIte__Regis__398D8EEE">
+          <End Role="RegisteredUser" Type="Self.RegisteredUser" Multiplicity="1" />
+          <End Role="ReviewItem" Type="Self.ReviewItem" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="RegisteredUser">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="ReviewItem">
+              <PropertyRef Name="RegisteredUserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__ReviewRef__Regis__36B12243">
+          <End Role="RegisteredUser" Type="Self.RegisteredUser" Multiplicity="1" />
+          <End Role="ReviewRefreshRequest" Type="Self.ReviewRefreshRequest" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="RegisteredUser">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="ReviewRefreshRequest">
+              <PropertyRef Name="RegisteredUserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK__ReviewSes__Regis__145C0A3F">
           <End Role="RegisteredUser" Type="Self.RegisteredUser" Multiplicity="1" />
           <End Role="ReviewSession" Type="Self.ReviewSession" Multiplicity="*" />
@@ -88,6 +133,8 @@
           <EntitySet Name="CompletedAuditEntry" EntityType="Self.CompletedAuditEntry" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="NoItemsInFilterEntry" EntityType="Self.NoItemsInFilterEntry" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="RegisteredUser" EntityType="Self.RegisteredUser" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ReviewItem" EntityType="Self.ReviewItem" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ReviewRefreshRequest" EntityType="Self.ReviewRefreshRequest" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ReviewSession" EntityType="Self.ReviewSession" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="UnrecognizedCommand" EntityType="Self.UnrecognizedCommand" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK__Completed__Regis__1A14E395" Association="Self.FK__Completed__Regis__1A14E395">
@@ -97,6 +144,14 @@
           <AssociationSet Name="FK__NoItemsIn__Regis__173876EA" Association="Self.FK__NoItemsIn__Regis__173876EA">
             <End Role="RegisteredUser" EntitySet="RegisteredUser" />
             <End Role="NoItemsInFilterEntry" EntitySet="NoItemsInFilterEntry" />
+          </AssociationSet>
+          <AssociationSet Name="FK__ReviewIte__Regis__398D8EEE" Association="Self.FK__ReviewIte__Regis__398D8EEE">
+            <End Role="RegisteredUser" EntitySet="RegisteredUser" />
+            <End Role="ReviewItem" EntitySet="ReviewItem" />
+          </AssociationSet>
+          <AssociationSet Name="FK__ReviewRef__Regis__36B12243" Association="Self.FK__ReviewRef__Regis__36B12243">
+            <End Role="RegisteredUser" EntitySet="RegisteredUser" />
+            <End Role="ReviewRefreshRequest" EntitySet="ReviewRefreshRequest" />
           </AssociationSet>
           <AssociationSet Name="FK__ReviewSes__Regis__145C0A3F" Association="Self.FK__ReviewSes__Regis__145C0A3F">
             <End Role="RegisteredUser" EntitySet="RegisteredUser" />
@@ -135,6 +190,8 @@
           <NavigationProperty Name="CompletedAuditEntries" Relationship="Self.FK__Completed__Regis__267ABA7A" FromRole="RegisteredUser" ToRole="CompletedAuditEntry" />
           <NavigationProperty Name="NoItemsInFilterEntries" Relationship="Self.FK__NoItemsIn__Regis__239E4DCF" FromRole="RegisteredUser" ToRole="NoItemsInFilterEntry" />
           <NavigationProperty Name="ReviewSessions" Relationship="Self.FK__ReviewSes__Regis__20C1E124" FromRole="RegisteredUser" ToRole="ReviewSession" />
+          <NavigationProperty Name="ReviewItems" Relationship="CVChatbot.Bot.Model.FK__ReviewIte__Regis__398D8EEE" FromRole="RegisteredUser" ToRole="ReviewItem" />
+          <NavigationProperty Name="ReviewRefreshRequests" Relationship="CVChatbot.Bot.Model.FK__ReviewRef__Regis__36B12243" FromRole="RegisteredUser" ToRole="ReviewRefreshRequest" />
         </EntityType>
         <EntityType Name="ReviewSession">
           <Key>
@@ -176,6 +233,16 @@
             <End Role="ReviewSession" EntitySet="ReviewSessions" />
           </AssociationSet>
           <EntitySet Name="UnrecognizedCommands" EntityType="CVChatbot.Bot.Model.UnrecognizedCommand" />
+          <EntitySet Name="ReviewItems" EntityType="CVChatbot.Bot.Model.ReviewItem" />
+          <EntitySet Name="ReviewRefreshRequests" EntityType="CVChatbot.Bot.Model.ReviewRefreshRequest" />
+          <AssociationSet Name="FK__ReviewIte__Regis__398D8EEE" Association="CVChatbot.Bot.Model.FK__ReviewIte__Regis__398D8EEE">
+            <End Role="RegisteredUser" EntitySet="RegisteredUsers" />
+            <End Role="ReviewItem" EntitySet="ReviewItems" />
+          </AssociationSet>
+          <AssociationSet Name="FK__ReviewRef__Regis__36B12243" Association="CVChatbot.Bot.Model.FK__ReviewRef__Regis__36B12243">
+            <End Role="RegisteredUser" EntitySet="RegisteredUsers" />
+            <End Role="ReviewRefreshRequest" EntitySet="ReviewRefreshRequests" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="UnrecognizedCommand">
           <Key>
@@ -184,6 +251,35 @@
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Command" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
+        <EntityType Name="ReviewItem">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ReviewId" Type="Int32" Nullable="false" />
+          <Property Name="AuditPassed" Type="Boolean" />
+          <Property Name="PostTag1" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PostTag2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PostTag3" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PostTag4" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PostTag5" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="RegisteredUser" Relationship="CVChatbot.Bot.Model.FK__ReviewIte__Regis__398D8EEE" FromRole="ReviewItem" ToRole="RegisteredUser" />
+        </EntityType>
+        <EntityType Name="ReviewRefreshRequest">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <NavigationProperty Name="RegisteredUser" Relationship="CVChatbot.Bot.Model.FK__ReviewRef__Regis__36B12243" FromRole="ReviewRefreshRequest" ToRole="RegisteredUser" />
+        </EntityType>
+        <Association Name="FK__ReviewIte__Regis__398D8EEE">
+          <End Type="CVChatbot.Bot.Model.RegisteredUser" Role="RegisteredUser" Multiplicity="1" />
+          <End Type="CVChatbot.Bot.Model.ReviewItem" Role="ReviewItem" Multiplicity="*" />
+        </Association>
+        <Association Name="FK__ReviewRef__Regis__36B12243">
+          <End Type="CVChatbot.Bot.Model.RegisteredUser" Role="RegisteredUser" Multiplicity="1" />
+          <End Type="CVChatbot.Bot.Model.ReviewRefreshRequest" Role="ReviewRefreshRequest" Multiplicity="*" />
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -259,6 +355,43 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="ReviewItems">
+            <EntityTypeMapping TypeName="CVChatbot.Bot.Model.ReviewItem">
+              <MappingFragment StoreEntitySet="ReviewItem">
+                <ScalarProperty Name="PostTag5" ColumnName="PostTag5" />
+                <ScalarProperty Name="PostTag4" ColumnName="PostTag4" />
+                <ScalarProperty Name="PostTag3" ColumnName="PostTag3" />
+                <ScalarProperty Name="PostTag2" ColumnName="PostTag2" />
+                <ScalarProperty Name="PostTag1" ColumnName="PostTag1" />
+                <ScalarProperty Name="AuditPassed" ColumnName="AuditPassed" />
+                <ScalarProperty Name="ReviewId" ColumnName="ReviewId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ReviewRefreshRequests">
+            <EntityTypeMapping TypeName="CVChatbot.Bot.Model.ReviewRefreshRequest">
+              <MappingFragment StoreEntitySet="ReviewRefreshRequest">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="FK__ReviewIte__Regis__398D8EEE" TypeName="CVChatbot.Bot.Model.FK__ReviewIte__Regis__398D8EEE" StoreEntitySet="ReviewItem">
+            <EndProperty Name="ReviewItem">
+              <ScalarProperty Name="Id" ColumnName="Id" />
+            </EndProperty>
+            <EndProperty Name="RegisteredUser">
+              <ScalarProperty Name="Id" ColumnName="RegisteredUserId" />
+            </EndProperty>
+          </AssociationSetMapping>
+          <AssociationSetMapping Name="FK__ReviewRef__Regis__36B12243" TypeName="CVChatbot.Bot.Model.FK__ReviewRef__Regis__36B12243" StoreEntitySet="ReviewRefreshRequest">
+            <EndProperty Name="ReviewRefreshRequest">
+              <ScalarProperty Name="Id" ColumnName="Id" />
+            </EndProperty>
+            <EndProperty Name="RegisteredUser">
+              <ScalarProperty Name="Id" ColumnName="RegisteredUserId" />
+            </EndProperty>
+          </AssociationSetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

@@ -19,6 +19,8 @@ namespace CVChatbot.Bot.Model
             this.CompletedAuditEntries = new HashSet<CompletedAuditEntry>();
             this.NoItemsInFilterEntries = new HashSet<NoItemsInFilterEntry>();
             this.ReviewSessions = new HashSet<ReviewSession>();
+            this.ReviewItems = new HashSet<ReviewItem>();
+            this.ReviewRefreshRequests = new HashSet<ReviewRefreshRequest>();
         }
     
         public int Id { get; set; }
@@ -28,5 +30,7 @@ namespace CVChatbot.Bot.Model
         public virtual ICollection<CompletedAuditEntry> CompletedAuditEntries { get; set; }
         public virtual ICollection<NoItemsInFilterEntry> NoItemsInFilterEntries { get; set; }
         public virtual ICollection<ReviewSession> ReviewSessions { get; set; }
+        public virtual ICollection<ReviewItem> ReviewItems { get; set; }
+        public virtual ICollection<ReviewRefreshRequest> ReviewRefreshRequests { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CVChatbot.Bot;
+using CVChatbot.Bot.ProfileParsing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,11 @@ namespace CVChatbot.UI
             mng.ShutdownOrderGiven += mng_ShutdownOrderGiven;
 
             lblCurrentStatus.Content = "Disconnected";
+
+            ProfileParser pp = new ProfileParser();
+            var ids = pp.EnumNewCloseVoteReviewItemIdsFromProfile(1043380);
+
+            var a = ids.Take(200).ToList();
         }
 
         void mng_ShutdownOrderGiven()

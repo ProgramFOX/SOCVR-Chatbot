@@ -30,5 +30,7 @@ namespace CVChatbot.Bot.Model
         public virtual DbSet<RegisteredUser> RegisteredUsers { get; set; }
         public virtual DbSet<ReviewSession> ReviewSessions { get; set; }
         public virtual DbSet<UnrecognizedCommand> UnrecognizedCommands { get; set; }
+        public virtual DbSet<ReviewItem> ReviewItems { get; set; }
+        public virtual DbSet<ReviewRefreshRequest> ReviewRefreshRequests { get; set; }
     }
 }
