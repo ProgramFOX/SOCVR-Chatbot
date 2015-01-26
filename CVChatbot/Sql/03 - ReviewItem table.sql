@@ -1,6 +1,7 @@
 create table ReviewItem
 (
 	Id int not null primary key identity,
+	ReviewTs datetimeoffset not null,
 	ReviewId int not null,
 	RegisteredUserId int not null foreign key references RegisteredUser(Id),
 	AuditPassed bit null,
