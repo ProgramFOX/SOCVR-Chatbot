@@ -22,6 +22,7 @@ namespace CVChatbot.Bot.Model
         public string PostTag3 { get; set; }
         public string PostTag4 { get; set; }
         public string PostTag5 { get; set; }
+        public System.DateTimeOffset ReviewTs { get; set; }
     
         public virtual RegisteredUser RegisteredUser { get; set; }
     }

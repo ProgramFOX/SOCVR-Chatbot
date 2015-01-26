@@ -7,11 +7,94 @@ using System.Threading.Tasks;
 using TheCommonLibrary.Extensions;
 using CVChatbot.Bot.Model;
 using System.Threading;
+using System.Net;
+using System.Collections.Specialized;
 
 namespace CVChatbot.Bot.ProfileParsing
 {
     public class ProfileParser
     {
+        public void GetNewReviewItemsForProfile(int profileId)
+        {
+            var newReviewItemIds = EnumNewCloseVoteReviewItemIdsFromProfile(profileId);
+
+            using (CVChatBotEntities db = new CVChatBotEntities())
+            {
+                foreach (var reviewItemId in newReviewItemIds)
+                {
+                    var newReviewItem = ParseReviewItemById(reviewItemId);
+                    db.ReviewItems.Add(newReviewItem);
+                    db.SaveChanges();
+                }
+            }
+        }
+
+        private ReviewItem ParseReviewItemById(int reviewItemId)
+        {
+            string res;
+
+            using (var wb = new WebClient())
+            {
+                var data = new NameValueCollection { { "taskTypeId", "2" } };
+                res = Encoding.UTF8.GetString(wb.UploadValues("http://stackoverflow.com/review/next-task/" + reviewItemId, "POST", data));
+            }
+
+
+        }
+
+        private void PopulateResults(string postResponse)
+        {
+            Results = new List<ReviewResult>();
+
+            dynamic json = JsonConvert.DeserializeObject(postResponse);
+            var html = (string)json["instructions"];
+            var dom = CQ.Create(html);
+
+            foreach (var i in dom[".review-results"])
+            {
+                var username = "";
+                var timeStamp = new DateTime();
+                var action = ReviewAction.LeaveOpen;
+
+                foreach (var j in i.ChildElements)
+                {
+                    if (j.Attributes["href"] != null && j.Attributes["href"].StartsWith(@"/users/"))
+                    {
+                        username = j.InnerHTML;
+                    }
+                    else if (j.Attributes["title"] != null)
+                    {
+                        timeStamp = DateTime.Parse(j.Attributes["title"]);
+                    }
+                    else
+                    {
+                        switch (j.InnerHTML)
+                        {
+                            case "Close":
+                                {
+                                    action = ReviewAction.Close;
+                                    break;
+                                }
+
+                            case "Leave Open":
+                                {
+                                    action = ReviewAction.LeaveOpen;
+                                    break;
+                                }
+
+                            case "Edit":
+                                {
+                                    action = ReviewAction.Edit;
+                                    break;
+                                }
+                        }
+                    }
+                }
+
+                Results.Add(new ReviewResult(username, action, timeStamp));
+            }
+        }
+
         public IEnumerable<int> EnumNewCloseVoteReviewItemIdsFromProfile(int profileId)
         {
             int pageNumber = 1;

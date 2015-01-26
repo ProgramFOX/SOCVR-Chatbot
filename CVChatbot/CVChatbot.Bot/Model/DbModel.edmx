@@ -36,6 +36,7 @@
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ReviewTs" Type="datetimeoffset" Precision="7" Nullable="false" />
           <Property Name="ReviewId" Type="int" Nullable="false" />
           <Property Name="RegisteredUserId" Type="int" Nullable="false" />
           <Property Name="AuditPassed" Type="bit" />
@@ -93,7 +94,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__ReviewIte__Regis__398D8EEE">
+        <Association Name="FK__ReviewIte__Regis__49C3F6B7">
           <End Role="RegisteredUser" Type="Self.RegisteredUser" Multiplicity="1" />
           <End Role="ReviewItem" Type="Self.ReviewItem" Multiplicity="*" />
           <ReferentialConstraint>
@@ -145,7 +146,7 @@
             <End Role="RegisteredUser" EntitySet="RegisteredUser" />
             <End Role="NoItemsInFilterEntry" EntitySet="NoItemsInFilterEntry" />
           </AssociationSet>
-          <AssociationSet Name="FK__ReviewIte__Regis__398D8EEE" Association="Self.FK__ReviewIte__Regis__398D8EEE">
+          <AssociationSet Name="FK__ReviewIte__Regis__49C3F6B7" Association="Self.FK__ReviewIte__Regis__49C3F6B7">
             <End Role="RegisteredUser" EntitySet="RegisteredUser" />
             <End Role="ReviewItem" EntitySet="ReviewItem" />
           </AssociationSet>
@@ -264,6 +265,7 @@
           <Property Name="PostTag4" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="PostTag5" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="RegisteredUser" Relationship="CVChatbot.Bot.Model.FK__ReviewIte__Regis__398D8EEE" FromRole="ReviewItem" ToRole="RegisteredUser" />
+          <Property Name="ReviewTs" Type="DateTimeOffset" Nullable="false" Precision="7" />
         </EntityType>
         <EntityType Name="ReviewRefreshRequest">
           <Key>
@@ -358,6 +360,7 @@
           <EntitySetMapping Name="ReviewItems">
             <EntityTypeMapping TypeName="CVChatbot.Bot.Model.ReviewItem">
               <MappingFragment StoreEntitySet="ReviewItem">
+                <ScalarProperty Name="ReviewTs" ColumnName="ReviewTs" />
                 <ScalarProperty Name="PostTag5" ColumnName="PostTag5" />
                 <ScalarProperty Name="PostTag4" ColumnName="PostTag4" />
                 <ScalarProperty Name="PostTag3" ColumnName="PostTag3" />
