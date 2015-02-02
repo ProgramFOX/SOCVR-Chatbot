@@ -1,148 +1,90 @@
-﻿//using System;
-//using System.IO;
-//using System.Linq;
-//using System.Collections.Generic;
-//using System.Text;
-//using CsQuery;
-//using ChatExchangeDotNet;
+﻿﻿using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text;
+using CsQuery;
+using System.Net;
+using ChatExchangeDotNet;
+using CVChatbot.Bot;
 
-//namespace CVChatbot
-//{
-//    public class SedeClient : IDisposable
-//    {
-//        private readonly string username;
-//        private readonly string email;
-//        private readonly string password;
-//        private bool disposed;
+namespace CVChatbot
+{
+    /// <summary>
+    /// Creates a singleton SedeClient for getting the tag listing from SEDE.
+    /// </summary>
+    public static class SedeAccessor
+    {
+        /// <summary>
+        /// The last CSV revision ID of when fresh tags were fetched.
+        /// </summary>
+        private static string lastCsvRevID;
 
-//        public SedeClient(string username, string email, string password)
-//        {
-//            if (String.IsNullOrEmpty(email)) { throw new ArgumentException("'email' must not be null or empty.", "email"); }
-//            if (String.IsNullOrEmpty(password)) { throw new ArgumentException("'password' must not be null or empty.", "password"); }
+        /// <summary>
+        /// The last time fresh tag data was fetched.
+        /// </summary>
+        private static DateTime lastRevIdCheckTime;
 
-//            this.username = username;
-//            this.email = email;
-//            this.password = password;
+        private static string loginEmail;
 
-//            SEOpenIDLogin(email, password);
-//        }
+        private static string loginPassword;
 
-//        ~SedeClient()
-//        {
-//            if (disposed) { return; }
+        // We have once client session wide.
+        private static SedeClient sedeClient = null;
 
-//            disposed = true;
-//        }
+        // We run the query and keep the result for a while.
+        private static Dictionary<string, int> tags = null;
 
-//        public Dictionary<string, int> GetTags()
-//        {
-//            // get in to eun first
-//            var first = GetRunQuery(@"http://data.stackexchange.com/stackoverflow/query/236526/tags-that-can-be-cleared-of-votes#");
-//            // no error checking whatsoever !!!!!!! :(
-//            var csv = GetCSVQuery("http://data.stackexchange.com/stackoverflow/csv/344267");
+        /// <summary>
+        /// A singleton for holing the SEDE client.
+        /// </summary>
+        private static SedeClient Client
+        {
+            get
+            {
+                if (sedeClient == null)
+                {
+                    sedeClient = new SedeClient(loginEmail, loginPassword);
+                }
+                return sedeClient;
+            }
+        }
 
-//            var tags = new Dictionary<string, int>();
-//            var header = true;
-//            foreach (var line in csv.Split(new string[] { "\r\n" }, StringSplitOptions.None))
-//            {
-//                var flds = line.Split(',');
-//                var tag = flds[0].Replace("\"", "");
-//                int cnt;
-//                Int32.TryParse(flds[1].Replace("\"", ""), out cnt);
-//                if (header)
-//                {
-//                    header = false;
-//                }
-//                else
-//                {
-//                    tags.Add(tag, cnt);
-//                }
-//            }
-//            return tags;
-//        }
+        /// <summary>
+        /// Gets the tags from the SEDE query. If the email and password has not already
+        /// been set then those credentials will be saved and used. Will also tell
+        /// the chat room if the tags are being refreshed (because it takes some time).
+        /// </summary>
+        /// <param name="chatRoom"></param>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public static Dictionary<string, int> GetTags(Room chatRoom, string email, string password)
+        {
+            // Set the email/password if not set.
+            if (loginEmail == null)
+            {
+                loginEmail = email;
+                loginPassword = password;
+            }
 
-//        private string GetRunQuery(string query)
-//        {
-//            var resp = RequestManager.SendGETRequest(query);
-//            var str = resp.GetResponseStream();
-//            using (var ms = new MemoryStream())
-//            {
-//                str.CopyTo(ms);
-//                return Encoding.UTF8.GetString(ms.ToArray());
-//            }
-//        }
+            // If tags have not been gotten yet or its been more than 30 minutes since the last get
+            // then refresh the tag listing.
+            if (tags == null || (DateTime.UtcNow - lastRevIdCheckTime).TotalMinutes > 30)
+            {
+                chatRoom.PostMessageOrThrow("Refreshing the tag listing. This could take a bit.");
 
-//        private string GetCSVQuery(string query)
-//        {
-//            var resp = RequestManager.SendGETRequest(query);
-//            var str = resp.GetResponseStream();
-//            using (var ms = new MemoryStream())
-//            {
-//                str.CopyTo(ms);
-//                return Encoding.UTF8.GetString(ms.ToArray());
-//            }
-//        }
+                var currentID = "";
 
-//        public void Dispose()
-//        {
-//            if (disposed) { return; }
+                if ((currentID = Client.GetSedeQueryCsvRevisionId("http://data.stackexchange.com/stackoverflow")) != lastCsvRevID)
+                {
+                    lastCsvRevID = currentID;
+                    tags = Client.GetTags();
+                }
 
-//            // clean up
-//            GC.SuppressFinalize(this);
-//            disposed = true;
-//        }
-
-//        private void SEOpenIDLogin(string email, string password)
-//        {
-//            var getRes = RequestManager.SendGETRequest("https://openid.stackexchange.com/account/login");
-
-//            if (getRes == null) { throw new Exception("Could not get OpenID fkey. Do you have an active internet connection?"); }
-
-//            var getResContent = RequestManager.GetResponseContent(getRes);
-//            var data = "email=" + Uri.EscapeDataString(email) + "&password=" + Uri.EscapeDataString(password) + "&fkey=" + CQ.Create(getResContent).GetFkey();
-
-//            RequestManager.CookiesToPass = RequestManager.GlobalCookies;
-//            var res = RequestManager.SendPOSTRequest("https://openid.stackexchange.com/account/login/submit", data);
-
-//            if (res == null || !String.IsNullOrEmpty(res.Headers["p3p"]))
-//            {
-//                throw new Exception("Could not login using the specified OpenID credentials. Have you entered the correct credentials and have an active internet connection?");
-//            }
-//        }
-
-//        private void SiteLogin(string host)
-//        {
-//            HandleNewAccountPrompt(host);
-//        }
-
-//        private void HandleNewAccountPrompt(string host)
-//        {
-//            var em = Uri.EscapeDataString(email);
-//            var pa = Uri.EscapeDataString(password);
-//            var na = Uri.EscapeDataString(username);
-//            var referrer = "https://" + host + "/users/signup?returnurl=http://" + host + "%2f";
-//            var origin = "https://" + host + ".com";
-//            var fkey = CQ.Create(RequestManager.GetResponseContent(RequestManager.SendGETRequest("https://" + host + "/users/signup"))).GetFkey();
-
-//            var data = "fkey=" + fkey + "&display-name=" + na + "&email=" + em + "&password=" + pa + "&password2=" + pa + "&legalLinksShown=1";
-
-//            var postRes = RequestManager.SendPOSTRequest("https://" + host + "/users/signup", data, true, referrer, origin);
-
-//            if (postRes == null) { throw new Exception("Could not login/sign-up."); }
-
-//            var resContent = RequestManager.GetResponseContent(postRes);
-
-//            // We already have an account (and we've been logged in).
-//            if (!resContent.Contains("We will automatically link this account with your accounts on other Stack Exchange sites.")) { return; }
-
-//            // We don't have an account, so lets create one!
-
-//            var dom = CQ.Create(resContent);
-//            var s = dom["input"].First(e => e.Attributes["name"] != null && e.Attributes["name"] == "s").Attributes["value"];
-
-//            var signUpRes = RequestManager.SendPOSTRequest("https://" + host + "/users/openidconfirm", "fkey=" + fkey + "&s=" + s + "&legalLinksShown=1", true, referrer, origin);
-
-//            if (signUpRes == null) { throw new Exception("Could not login/sign-up."); }
-//        }
-//    }
-//}
+                lastRevIdCheckTime = DateTime.UtcNow;
+            }
+            return tags;
+        }
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using ChatExchangeDotNet;
+using CsQuery;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +11,42 @@ using TheCommonLibrary.Extensions;
 
 namespace CVChatbot.Bot
 {
+    /// <summary>
+    /// Extension methods used in this project.
+    /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        ///  On a CQ dom find an <input name="foo" value="bar" > with the name foo and return bar or null for no match. 
+        /// </summary>
+        /// <param name="input">CQ instance</param>
+        /// <param name="elementName">elementname</param>
+        /// <returns>value on the input tag or null</returns>
+        /// <remarks>
+        /// Stolen from CE.Net. :O
+        /// </remarks>
+        internal static string GetInputValue(this CQ input, string elementName)
+        {
+            var fkeyE = input["input"].FirstOrDefault(e => e.Attributes["name"] != null && e.Attributes["name"] == elementName);
+
+            return fkeyE == null ? null : fkeyE.Attributes["value"];
+        }
+
+        /// <summary>
+        /// Takes a chat message and return its contents with any "mentions" stripped out.
+        /// </summary>
+        /// <param name="message">The message to process.</param>
+        /// <returns></returns>
         public static string GetContentsWithStrippedMentions(this Message message)
         {
             return ChatExchangeDotNet.ExtensionMethods.StripMention(message.Content);
         }
 
+        /// <summary>
+        /// Attempts to post the message to the chat room. If the message could not be posted an exception will be thrown.
+        /// </summary>
+        /// <param name="chatRoom"></param>
+        /// <param name="message"></param>
         public static void PostMessageOrThrow(this Room chatRoom, string message)
         {
             var postedMessage = chatRoom.PostMessage(message);
@@ -27,11 +57,23 @@ namespace CVChatbot.Bot
             }
         }
 
+        /// <summary>
+        /// Attempts to post the reply message to the chat room. If the message could not be posted an exception will be thrown.
+        /// </summary>
+        /// <param name="chatRoom"></param>
+        /// <param name="replyingToMessage"></param>
+        /// <param name="message"></param>
         public static void PostReplyOrThrow(this Room chatRoom, Message replyingToMessage, string message)
         {
             chatRoom.PostReplyOrThrow(replyingToMessage.ID, message);
         }
 
+        /// <summary>
+        /// Attempts to post the reply message to the chat room. If the message could not be posted an exception will be thrown.
+        /// </summary>
+        /// <param name="chatRoom"></param>
+        /// <param name="replyingToMessageId"></param>
+        /// <param name="message"></param>
         public static void PostReplyOrThrow(this Room chatRoom, int replyingToMessageId, string message)
         {
             var postedMessage = chatRoom.PostReply(replyingToMessageId, message);
@@ -42,6 +84,13 @@ namespace CVChatbot.Bot
             }
         }
 
+        /// <summary>
+        /// Recursively gets all stack traces from an exception and any inner exceptions. 
+        /// Places an empty line between traces.
+        /// The most inner exception's stack trace will be at the top and will unwind.
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
         public static string GetAllStackTraces(this Exception ex)
         {
             var allStackTraces = GetAllStackTracesInner(ex);
@@ -52,7 +101,7 @@ namespace CVChatbot.Bot
 
         private static List<string> GetAllStackTracesInner(this Exception ex)
         {
-            List<string> stackTraces = new List<string>();
+            var stackTraces = new List<string>();
 
             if (ex.InnerException != null)
             {
@@ -82,7 +131,7 @@ namespace CVChatbot.Bot
             const int DaysInMonth = 30;
 
             // Get each non-zero value from TimeSpan component
-            List<string> values = new List<string>();
+            var values = new List<string>();
 
             // Number of years
             int days = span.Days;
@@ -113,7 +162,7 @@ namespace CVChatbot.Bot
                 values.Add(CreateValueString(span.Seconds, "second"));
 
             // Combine values into string
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             for (int i = 0; i < values.Count; i++)
             {
                 if (builder.Length > 0)
@@ -135,12 +184,29 @@ namespace CVChatbot.Bot
                 value, (value == 1) ? description : String.Format("{0}s", description));
         }
 
-        //https://github.com/superlogical/TableParser
+        /// <summary>
+        /// Creates an ascii table from the given IEnumerable.
+        /// Taken from https://github.com/superlogical/TableParser
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="values"></param>
+        /// <param name="columnHeaders"></param>
+        /// <param name="valueSelectors"></param>
+        /// <returns></returns>
         public static string ToStringTable<T>(this IEnumerable<T> values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
         {
             return ToStringTable(values.ToArray(), columnHeaders, valueSelectors);
         }
 
+        /// <summary>
+        /// Creates an ascii table from the given array.
+        /// Take from https://github.com/superlogical/TableParser
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="values"></param>
+        /// <param name="columnHeaders"></param>
+        /// <param name="valueSelectors"></param>
+        /// <returns></returns>
         public static string ToStringTable<T>(this T[] values, string[] columnHeaders, params Func<T, object>[] valueSelectors)
         {
             var arrValues = new string[values.Length + 1, valueSelectors.Length];
@@ -165,6 +231,12 @@ namespace CVChatbot.Bot
             return ToStringTable(arrValues);
         }
 
+        /// <summary>
+        /// Creates an ascii table from the given array.
+        /// Taken from https://github.com/superlogical/TableParser
+        /// </summary>
+        /// <param name="arrValues"></param>
+        /// <returns></returns>
         public static string ToStringTable(this string[,] arrValues)
         {
             int[] maxColumnsWidth = GetMaxColumnsWidth(arrValues);
@@ -219,6 +291,14 @@ namespace CVChatbot.Bot
             return maxColumnsWidth;
         }
 
+        /// <summary>
+        /// Creates an ascii table from the given array.
+        /// Taken from https://github.com/superlogical/TableParser
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="values"></param>
+        /// <param name="valueSelectors"></param>
+        /// <returns></returns>
         public static string ToStringTable<T>(this IEnumerable<T> values, params Expression<Func<T, object>>[] valueSelectors)
         {
             var headers = valueSelectors.Select(func => GetProperty(func).Name).ToArray();

@@ -7,8 +7,16 @@ using System.Threading.Tasks;
 
 namespace CVChatbot.Bot.ChatbotActions
 {
+    /// <summary>
+    /// Holds a list of instances that inherit from ChatbotAction.
+    /// This is essentially the UserCommand and Trigger listing.
+    /// </summary>
     public static class ChatbotActionRegister
     {
+        /// <summary>
+        /// Returns list where each element is an instance of a different class that inherits ChatBotAction and is not abstract.
+        /// Use this value to loop through all the UserCommands and Triggers in the program.
+        /// </summary>
         public static List<ChatbotAction> AllChatActions
         {
             get
@@ -19,12 +27,16 @@ namespace CVChatbot.Bot.ChatbotActions
             }
         }
 
+        /// <summary>
+        /// Return the usage for a given action.
+        /// </summary>
+        /// <typeparam name="TAction">A type that inherits ChatbotAction.</typeparam>
+        /// <returns></returns>
         public static string GetChatBotActionUsage<TAction>()
             where TAction : ChatbotAction
         {
             return AllChatActions
-                .Where(x => x is TAction)
-                .Single()
+                .Single(x => x is TAction)
                 .GetActionUsage();
         }
 
@@ -32,7 +44,7 @@ namespace CVChatbot.Bot.ChatbotActions
         {
             public static IEnumerable<T> GetEnumerableOfType<T>(params object[] constructorArgs) where T : class
             {
-                List<T> objects = new List<T>();
+                var objects = new List<T>();
                 foreach (Type type in
                     Assembly.GetAssembly(typeof(T)).GetTypes()
                     .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T))))

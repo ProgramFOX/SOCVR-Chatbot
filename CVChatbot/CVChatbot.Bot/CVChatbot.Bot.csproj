@@ -20,6 +20,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -62,11 +64,14 @@
     <Compile Include="ChatbotActions\Commands\AuditStats.cs" />
     <Compile Include="ChatbotActions\Commands\Commands.cs" />
     <Compile Include="ChatbotActions\Commands\CompletedTags.cs" />
+    <Compile Include="ChatbotActions\Commands\CurrentTag.cs" />
     <Compile Include="ChatbotActions\Commands\CurrentSession.cs" />
     <Compile Include="ChatbotActions\Commands\EndSession.cs" />
     <Compile Include="ChatbotActions\Commands\Help.cs" />
     <Compile Include="ChatbotActions\Commands\LastSessionEditCount.cs" />
     <Compile Include="ChatbotActions\Commands\LastSessionStats.cs" />
+    <Compile Include="ChatbotActions\Commands\NextTags.cs" />
+    <Compile Include="ChatbotActions\Commands\StartEvent.cs" />
     <Compile Include="ChatbotActions\Commands\StopBot.cs" />
     <Compile Include="ChatbotActions\Commands\RunningCommands.cs" />
     <Compile Include="ChatbotActions\Commands\StartingSession.cs" />
@@ -82,7 +87,9 @@
     <Compile Include="ChatbotActions\Triggers\Trigger.cs" />
     <Compile Include="ChatBotStats.cs" />
     <Compile Include="ChatMessageProcessor.cs" />
+    <Compile Include="CloseQueueStatsAccessor.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Model\CompletedAuditEntry.cs">
       <DependentUpon>DbModel.tt</DependentUpon>
     </Compile>
@@ -123,8 +130,10 @@
     <Compile Include="ProfileParsing\ProfileParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoomManager.cs" />
-    <Compile Include="RunningCommandsManager.cs" />
+    <Compile Include="RunningChatbotActionsManager.cs" />
     <Compile Include="SEDEAccessor.cs" />
+    <Compile Include="SedeClient.cs" />
+    <Compile Include="ThrowWhen.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.Config" />
